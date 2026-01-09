@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>UTI Pediátrica – Guia de Intubação (IOT)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    :root{
+      /* 🎨 Paleta base (mesmo “DNA” das outras calculadoras) */
+      --azul-claro:#e3f2fd;         /* azul-bebê */
+      --azul-marinho:#0d47a1;
+      --verde-sucesso:#1b5e20;      /* verde-escuro */
+      --amarelo-alerta:#d97706;
+      --vermelho-risco:#dc2626;
+      --cinza-borda:#d1d5db;
+      --texto-principal:#1f2933;
+      --texto-secundario:#4b5563;
+    }
+
+    *{box-sizing:border-box}
+
+    body{
+      margin:0;
+      padding:16px;
+      min-height:100vh;
+      font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      color:var(--texto-principal);
+      display:flex;
+      align-items:flex-start;
+      justify-content:center;
+      background:linear-gradient(135deg,var(--azul-claro),#fff);
+    }
+
+    .container{
+      width:100%;
+      max-width:760px;
+      background:#fff;
+      border-radius:16px;
+      box-shadow:0 10px 30px rgba(15,23,42,.15);
+      padding:28px 24px 24px;
+      margin-bottom:24px;
+    }
+
+    .header{
+      margin-bottom:20px;
+      border-bottom:2px solid var(--azul-claro);
+      padding-bottom:16px;
+    }
+
+    .title{
+      font-size:1.6rem;
+      font-weight:800;
+      color:var(--azul-marinho);
+      margin:0 0 6px 0;
+    }
+
+    .subtitle{
+      font-size:.85rem;
+      color:var(--texto-secundario);
+      line-height:1.4;
+      margin:0;
+    }
+
+    .modulo{
+      margin-top:24px;
+      padding:16px;
+      background:#fafbfc;
+      border-radius:12px;
+      border-left:4px solid var(--azul-marinho);
+    }
+
+    .modulo-titulo{
+      font-size:1.1rem;
+      font-weight:800;
+      color:var(--azul-marinho);
+      margin:0 0 14px 0;
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+    .modulo-titulo::before{content:"▸";font-size:1.4rem}
+
+    .field-group{margin-bottom:14px}
+    .field-group:last-child{margin-bottom:0}
+
+    label{
+      display:block;
+      font-size:.9rem;
+      font-weight:650;
+      margin-bottom:5px;
+      color:var(--texto-principal);
+    }
+
+    .label-hint{
+      font-size:.75rem;
+      color:var(--texto-secundario);
+      font-weight:400;
+      margin-left:2px;
+    }
+
+    input[type="number"], select{
+      width:100%;
+      padding:10px 12px;
+      border-radius:8px;
+      border:1.5px solid var(--cinza-borda);
+      font-size:.95rem;
+      font-family:inherit;
+      transition:box-shadow .2s ease,border-color .2s ease;
+      background:#fff;
+    }
+
+    input[type="number"]:focus, select:focus{
+      outline:none;
+      border-color:var(--azul-marinho);
+      box-shadow:0 0 0 3px rgba(13,71,161,.10);
+    }
+
+    .inline-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(170px,1fr));
+      gap:12px;
+    }
+
+    .hint{
+      font-size:.75rem;
+      color:var(--texto-secundario);
+      margin-top:3px;
+      font-style:italic;
+    }
+
+    .btn-row{
+      display:flex;
+      gap:10px;
+      margin-top:24px;
+      justify-content:center;
+    }
+
+    .btn{
+      flex:1;
+      max-width:240px;
+      padding:12px 16px;
+      border-radius:999px;
+      border:none;
+      cursor:pointer;
+      font-weight:650;
+      font-size:.95rem;
+      transition:transform .2s ease,box-shadow .2s ease,background .2s ease;
+    }
+
+    .btn-primary{
+      background:var(--azul-marinho);
+      color:#fff;
+      box-shadow:0 4px 12px rgba(13,71,161,.30);
+    }
+    .btn-primary:hover{
+      transform:translateY(-2px);
+      box-shadow:0 6px 16px rgba(13,71,161,.40);
+    }
+
+    .btn-secondary{
+      background:#f3f4f6;
+      color:var(--azul-marinho);
+      border:1.5px solid var(--cinza-borda);
+    }
+    .btn-secondary:hover{background:var(--azul-claro)}
+
+    .resultado{
+      margin-top:24px;
+      padding:16px;
+      border-radius:12px;
+      display:none;
+      animation:slideIn .25s ease;
+    }
+    @keyframes slideIn{
+      from{opacity:0;transform:translateY(-8px)}
+      to{opacity:1;transform:translateY(0)}
+    }
+
+    .resultado.sucesso{background:#ecfdf5;border-left:4px solid var(--verde-sucesso)}
+    .resultado.alerta{background:#fffbeb;border-left:4px solid var(--amarelo-alerta)}
+    .resultado.risco{background:#fef2f2;border-left:4px solid var(--vermelho-risco)}
+
+    .resultado-titulo{
+      font-weight:850;
+      font-size:1.02rem;
+      margin-bottom:10px;
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+    .resultado.sucesso .resultado-titulo{color:var(--verde-sucesso)}
+    .resultado.alerta .resultado-titulo{color:var(--amarelo-alerta)}
+    .resultado.risco .resultado-titulo{color:var(--vermelho-risco)}
+
+    .resultado-conteudo{font-size:.92rem;line-height:1.6}
+
+    .metrica{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin:8px 0;
+      padding:8px 0;
+      border-bottom:1px dashed rgba(0,0,0,.08);
+      gap:10px;
+    }
+    .metrica:last-child{border-bottom:none}
+
+    .metrica-nome{font-size:.9rem;font-weight:650;color:var(--texto-principal)}
+    .metrica-valor{
+      font-size:.95rem;
+      font-weight:850;
+      padding:4px 8px;
+      border-radius:6px;
+      background:rgba(255,255,255,.6);
+      white-space:nowrap;
+      text-align:right;
+    }
+
+    .aviso-legal{
+      background:#fef3c7;
+      border-left:4px solid var(--amarelo-alerta);
+      padding:10px 12px;
+      border-radius:8px;
+      font-size:.82rem;
+      color:#92400e;
+      margin-top:12px;
+      line-height:1.4;
+    }
+
+    details{
+      margin-top:16px;
+      font-size:.85rem;
+      background:#f9fafb;
+      border-radius:10px;
+      padding:10px 12px;
+      border:1px solid var(--cinza-borda);
+    }
+
+    summary{
+      cursor:pointer;
+      font-weight:700;
+      color:var(--azul-marinho);
+      list-style:none;
+      user-select:none;
+    }
+    summary::-webkit-details-marker{display:none}
+    summary::before{content:"▸ ";display:inline-block;margin-right:4px}
+    details[open] summary::before{content:"▾ "}
+
+    .detalhes-conteudo{
+      margin-top:10px;
+      padding-top:10px;
+      border-top:1px solid var(--cinza-borda);
+      color:var(--texto-secundario);
+      line-height:1.5;
+    }
+
+    .footer{
+      margin-top:24px;
+      padding-top:16px;
+      border-top:1px solid var(--cinza-borda);
+      text-align:center;
+      font-size:.75rem;
+      color:var(--texto-secundario);
+      opacity:.65;
+    }
+
+    @media (max-width:600px){
+      .container{padding:20px 16px 16px;border-radius:12px}
+      .title{font-size:1.4rem}
+      .inline-grid{grid-template-columns:1fr}
+      .btn-row{flex-direction:column}
+      .btn{max-width:100%}
+    }
+
+    @media print{
+      body{background:#fff;padding:0}
+      .container{box-shadow:none;border-radius:0;max-width:100%}
+      .btn-row, details{display:none !important}
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <header class="header">
+      <h1 class="title">Guia de Intubação Pediátrica (IOT)</h1>
+      <p class="subtitle">
+        Seleção rápida de TOT (com/sem cuff), lâmina, profundidade estimada, sonda de aspiração e parâmetros ventilatórios iniciais (referenciais).
+      </p>
+    </header>
+
+    <main>
+      <form id="calcForm">
+        <div class="modulo">
+          <h2 class="modulo-titulo">Dados do Paciente</h2>
+
+          <div class="inline-grid">
+            <div class="field-group">
+              <label>Como informar idade?</label>
+              <select id="metodo_idade">
+                <option value="meses">Meses (0–11m)</option>
+                <option value="anos">Anos (1–12a)</option>
+              </select>
+              <div class="hint">A tabela do seu protocolo está estruturada em 0–6m, 6–11m e 1–12 anos.</div>
+            </div>
+
+            <div class="field-group" id="campo_meses">
+              <label>Idade (meses)</label>
+              <input type="number" id="idade_meses" min="0" max="11" step="1" placeholder="ex.: 8" />
+              <div class="hint">0–5m usa a linha “0–6m”. 6–11m usa “6–11m”.</div>
+            </div>
+
+            <div class="field-group" id="campo_anos" style="display:none;">
+              <label>Idade (anos)</label>
+              <input type="number" id="idade_anos" min="1" max="12" step="1" placeholder="ex.: 4" />
+              <div class="hint">Para idades intermediárias (ex.: 3,8a), use a idade arredondada para baixo.</div>
+            </div>
+          </div>
+
+          <div class="inline-grid" style="margin-top:10px;">
+            <div class="field-group">
+              <label>Peso atual (kg) <span class="label-hint">opcional, mas recomendado</span></label>
+              <input type="number" id="peso" min="0" max="200" step="0.1" placeholder="ex.: 16.5" />
+              <div class="hint">Se não informado a ferramenta calcula VT (mL) pela faixa de peso estimado.</div>
+            </div>
+
+            <div class="field-group">
+              <label>Via aérea difícil / risco? <span class="label-hint">triagem rápida</span></label>
+              <select id="via_dificil">
+                <option value="">Selecione...</option>
+                <option value="nao">Sem sinais claros</option>
+                <option value="sim">Suspeita/confirmada (obesidade craniofacial, trauma, edema, etc.)</option>
+              </select>
+              <div class="hint">Se “sim”, priorize plano de via aérea difícil e equipe completa.</div>
+            </div>
+          </div>
+
+          <div class="aviso-legal">
+            <strong>Nota:</strong> Esta ferramenta consolida os valores de referência baseada em literatura.
+             <p> Ajustes finais devem considerar via aérea difícil, complacência, hemodinâmica e meta de ventilação protetora. </p>
+         <p>  Ferramenta de apoio à decisão não substitui avaliação clínica, decisão do profissional e deliberações da equipe multi. </p>
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button type="button" class="btn btn-primary" id="btnGerar">Gerar Recomendações</button>
+          <button type="button" class="btn btn-secondary" id="btnLimpar">Limpar</button>
+        </div>
+      </form>
+
+      <div id="resultado" class="resultado"></div>
+
+      <details>
+        <summary>Como a ferramenta escolhe a linha da tabela</summary>
+        <div class="detalhes-conteudo">
+          <strong>0–11 meses:</strong> usa “0–6m” ou “6–11m”.<br/>
+          <strong>1–12 anos:</strong> usa a linha correspondente ao ano informado (1 a 12).<br/><br/>
+          <em>Se a criança estiver “entre” idades, recomenda-se usar o ano completo inferior como referência inicial e ajustar pelo quadro clínico e pela passagem do tubo.</em>
+        </div>
+      </details>
+    </main>
+
+    <footer class="footer">
+      Desenvolvido por: Gabriela Canguçu | Coordenação de Fisioterapia | UTI Pediátrica
+    </footer>
+  </div>
+
+  <script>
+    // ========= Dados (extraídos da sua planilha) =========
+    const TABELA = [{"age_label":"0-6m","id_uncuffed_reco":"3","id_cuffed_reco":"2,5 Microcuff®","id_uncuffed_formula":null,"depth_hint":"Peso + 6","blade":"Reta 0","suction_fr":"6","rr_range":"30-50 irpm","peso_medio":"3 - 3,5 Kg","vt_mlkg":"4–6 mL/kg (neonatal)","vt_ml":"14-21 ml","pip_max":"15–20","ti":"0,35 - 0,5","cstat":"4,6–6,0","cdyn":"1,4–2,1"},{"age_label":"6-11m","id_uncuffed_reco":"3 - 3,5","id_cuffed_reco":"3","id_uncuffed_formula":null,"depth_hint":"Idade (M) + 9","blade":"Reta 0-1","suction_fr":"6","rr_range":"30-45 irpm","peso_medio":"4 - 7 Kg","vt_mlkg":"6-8 ml/kg","vt_ml":"42 -56 ml","pip_max":"20–25","ti":"0,4 - 0,65","cstat":"8,4–12,6","cdyn":"2,8–4,2"},{"age_label":"1","id_uncuffed_reco":"4","id_cuffed_reco":"3.5","id_uncuffed_formula":4.25,"depth_hint":"10,5 - 12","blade":"Reta ou Curva 1","suction_fr":"6 - 8","rr_range":"25-40 irpm","peso_medio":"10 Kg","vt_mlkg":"6-8 ml/kg","vt_ml":"60-80 ml","pip_max":"20–25","ti":"0,5 - 0,6","cstat":"12,0–18,0","cdyn":"4,0–6,0"},{"age_label":"2","id_uncuffed_reco":"4.5","id_cuffed_reco":"4","id_uncuffed_formula":4.5,"depth_hint":"12 - 13,5","blade":"Reta ou Curva 1-2","suction_fr":"8","rr_range":"25-30 irpm","peso_medio":"12 Kg","vt_mlkg":"6-8 ml/kg","vt_ml":"72–96 ml","pip_max":"25–30","ti":"0,6 - 0,7","cstat":"13,2–19,2","cdyn":"4,8–7,2"},{"age_label":"3","id_uncuffed_reco":"4.5","id_cuffed_reco":"4","id_uncuffed_formula":4.75,"depth_hint":"12 - 13,5","blade":"Reta ou Curva 2","suction_fr":"8","rr_range":"20 - 30 irpm","peso_medio":"14 Kg","vt_mlkg":"6-8 ml/kg","vt_ml":"84–112 ml","pip_max":"25–30","ti":"0,7-0,8","cstat":"14,0–21,0","cdyn":"5,6–8,4"},{"age_label":"4","id_uncuffed_reco":"5","id_cuffed_reco":"4.5","id_uncuffed_formula":5,"depth_hint":"13,5 - 15","blade":"Reta ou Curva 2","suction_fr":"8 - 10","rr_range":"20 - 30 irpm","peso_medio":"16 Kg","vt_mlkg":"6-8 ml/kg","vt_ml":"96–128 ml","pip_max":"25–30","ti":"0,7-0,8","cstat":"16,0–22,4","cdyn":"6,4–9,6"},{"age_label":"5","id_uncuffed_reco":"5","id_cuffed_reco":"4.5","id_uncuffed_formula":5.25,"depth_hint":"13,5 - 15","blade":"Reta ou Curva 2","suction_fr":"8- 10","rr_range":"20 - 25 irpm","peso_medio":"18 Kg","vt_mlkg":"6-8 ml/kg","vt_ml":"108–144 ml","pip_max":"25–30","ti":"0,7-0,8","cstat":"18,0–25,2","cdyn":"7,2–10,8"},{"age_label":"6","id_uncuffed_reco":"5.5","id_cuffed_reco":"5","id_uncuffed_formula":5.5,"depth_hint":"15 - 16,5","blade":"Reta ou Curva 2","suction_fr":"10","rr_range":"16 - 25 irpm","peso_medio":"21 kg","vt_mlkg":"6-8 ml/kg","vt_ml":"126–168 ml","pip_max":"25–30","ti":"0,7-0,9","cstat":"18,9–27,3","cdyn":"8,4–12,6"},{"age_label":"7","id_uncuffed_reco":"5.5","id_cuffed_reco":"5","id_uncuffed_formula":5.75,"depth_hint":"15 - 16,5","blade":"Reta ou Curva 2","suction_fr":"10","rr_range":"16 -20 irpm","peso_medio":"24 Kg","vt_mlkg":"6-8 ml/kg","vt_ml":"144–192 ml","pip_max":"25–30","ti":"0,8-0,9","cstat":"21,6–31,2","cdyn":"9,6–14,4"},{"age_label":"8","id_uncuffed_reco":"6","id_cuffed_reco":"5.5","id_uncuffed_formula":6,"depth_hint":"16,5 - 18","blade":"Reta ou Curva 2","suction_fr":"10 - 12","rr_range":"15-20 irpm","peso_medio":"27 Kg","vt_mlkg":"6-8 ml/kg","vt_ml":"162–216 ml","pip_max":"25–30","ti":"0,8-1,0","cstat":"24,3–35,1","cdyn":"10,8–16,2"},{"age_label":"9","id_uncuffed_reco":"6","id_cuffed_reco":"5.5","id_uncuffed_formula":6.25,"depth_hint":"16,5 - 18","blade":"Reta 2 ou Curva 2-3","suction_fr":"10 - 12","rr_range":"15-20 irpm","peso_medio":"30 Kg","vt_mlkg":"6-8 ml/kg","vt_ml":"180–240 ml","pip_max":"30–35","ti":"0,8-1,0","cstat":"27,0–36,0","cdyn":"12,0–18,0"},{"age_label":"10","id_uncuffed_reco":"6.5","id_cuffed_reco":"6","id_uncuffed_formula":6.5,"depth_hint":"17 - 19,5","blade":"Reta 2 ou Curva 3","suction_fr":"12","rr_range":"15-20 irpm","peso_medio":"33 Kg","vt_mlkg":"6-8 ml/kg","vt_ml":"198–264 ml","pip_max":"30–35","ti":"0,8-1,0","cstat":"29,7–39,6","cdyn":"13,2–19,8"},{"age_label":"11","id_uncuffed_reco":"6.5","id_cuffed_reco":"6","id_uncuffed_formula":6.75,"depth_hint":"17,5 - 19,5","blade":"Reta 2 ou Curva 3","suction_fr":"12","rr_range":"15-20 irpm","peso_medio":"36 Kg","vt_mlkg":"6-8 ml/kg","vt_ml":"216–288 ml","pip_max":"30–35","ti":"1,0 - 1,3","cstat":"32,4–43,2","cdyn":"14,4–21,6"},{"age_label":"12","id_uncuffed_reco":"7","id_cuffed_reco":"6.5","id_uncuffed_formula":7,"depth_hint":"19 - 21","blade":"Reta 2 ou Curva 3","suction_fr":"10 - 12","rr_range":"15-20 irpm","peso_medio":"40 Kg","vt_mlkg":"6-8 ml/kg","vt_ml":"240–320 ml","pip_max":"30–35","ti":"1,0 - 1,3","cstat":"36,0–48,0","cdyn":"16,0–24,0"}];
+
+    const $ = (id) => document.getElementById(id);
+
+    function toggleIdade(){
+      const metodo = $("metodo_idade").value;
+      $("campo_meses").style.display = (metodo === "meses") ? "block" : "none";
+      $("campo_anos").style.display  = (metodo === "anos")  ? "block" : "none";
+    }
+
+    function escolherLinha(){
+      const metodo = $("metodo_idade").value;
+
+      if(metodo === "meses"){
+        const m = parseInt($("idade_meses").value, 10);
+        if(Number.isNaN(m)) return null;
+        return (m <= 5)
+          ? (TABELA.find(x => x.age_label === "0-6m") || null)
+          : (TABELA.find(x => x.age_label === "6-11m") || null);
+      }
+
+      const a = parseInt($("idade_anos").value, 10);
+      if(Number.isNaN(a)) return null;
+      return TABELA.find(x => x.age_label === String(a)) || null;
+    }
+
+    function parseVtMlKg(vtStr){
+      if(!vtStr) return null;
+      const nums = String(vtStr).replace(",", ".").match(/(\d+(?:\.\d+)?)/g);
+      if(!nums || nums.length < 2) return null;
+      const n1 = parseFloat(nums[0]), n2 = parseFloat(nums[1]);
+      if(Number.isNaN(n1) || Number.isNaN(n2)) return null;
+      return { min: Math.min(n1,n2), max: Math.max(n1,n2) };
+    }
+
+    function calcularVTml(vtMlKg, peso){
+      if(!vtMlKg || !peso || peso <= 0) return null;
+      return { min: vtMlKg.min * peso, max: vtMlKg.max * peso };
+    }
+
+    function calcularProfundidade(depthHint, peso, meses){
+      if(!depthHint) return null;
+      const txt = String(depthHint).toLowerCase();
+
+      if(txt.includes("peso") && txt.includes("+")){
+        if(!peso || peso <= 0) return null;
+        const n = txt.match(/\+\s*(\d+(?:[\.,]\d+)?)/);
+        if(!n) return null;
+        const add = parseFloat(n[1].replace(",", "."));
+        if(Number.isNaN(add)) return null;
+        return (peso + add).toFixed(1) + " cm";
+      }
+
+      if((txt.includes("idade") || txt.includes("m)")) && txt.includes("+")){
+        if(meses === null || meses === undefined || Number.isNaN(meses)) return null;
+        const n = txt.match(/\+\s*(\d+(?:[\.,]\d+)?)/);
+        if(!n) return null;
+        const add = parseFloat(n[1].replace(",", "."));
+        if(Number.isNaN(add)) return null;
+        return (meses + add).toFixed(0) + " cm";
+      }
+
+      return null;
+    }
+
+    function analisarIOT(){
+      try{
+        const linha = escolherLinha();
+        const metodo = $("metodo_idade").value;
+        const meses = (metodo === "meses") ? parseInt($("idade_meses").value, 10) : null;
+
+        const peso = parseFloat($("peso").value) || 0;
+        const viaDificil = $("via_dificil").value;
+
+        if(!linha){
+          alert("Informe a idade para gerar as recomendações.");
+          return;
+        }
+
+        const vtMlKg = parseVtMlKg(linha.vt_mlkg);
+        const vtCalc = calcularVTml(vtMlKg, peso);
+        const profCalc = calcularProfundidade(linha.depth_hint, peso, meses);
+
+        let nivel = "sucesso", icone = "✓", titulo = "Referenciais prontos para configuração inicial";
+        if(viaDificil === "sim"){
+          nivel = "alerta";
+          icone = "⚠️";
+          titulo = "Atenção: risco de via aérea difícil — priorize plano avançado";
+        }
+
+        const m = (nome, valor) => `
+          <div class="metrica">
+            <div class="metrica-nome">${nome}</div>
+            <div class="metrica-valor">${valueOrDash(valor)}</div>
+          </div>`;
+
+        let html = `<div class="resultado-titulo">${icone} ${titulo}</div><div class="resultado-conteudo">`;
+        html += `<div style="margin-bottom:10px;"><strong>Faixa/idade selecionada:</strong> ${linha.age_label}</div>`;
+
+        html += m("TOT sem cuff (ID mm) – referência", linha.id_uncuffed_reco);
+        html += m("TOT com cuff (ID mm) – referência", linha.id_cuffed_reco);
+
+        if(linha.id_uncuffed_formula){
+          html += m("ID estimado pela fórmula (sem cuff)", String(linha.id_uncuffed_formula));
+        }
+
+        html += m("Profundidade estimada / rima (referência)", linha.depth_hint);
+        if(profCalc) html += m("Profundidade calculada (quando aplicável)", profCalc);
+
+        html += m("Lâmina de laringoscópio – referência", linha.blade);
+        html += m("Sonda de aspiração (Fr) – referência", linha.suction_fr);
+        html += m("FR (faixa referência)", linha.rr_range);
+        html += m("Peso médio (referência)", linha.peso_medio);
+        html += m("VT (mL/kg) – referência", linha.vt_mlkg);
+
+        if(vtCalc){
+          html += m("VT calculado com peso informado", `${Math.round(vtCalc.min)}–${Math.round(vtCalc.max)} mL`);
+        }else{
+          html += m("VT (mL) – referência da tabela", linha.vt_ml);
+        }
+
+        html += m("PIP máximo (cmH₂O) – referência", linha.pip_max);
+        html += m("Tempo inspiratório (s) – referência", linha.ti);
+        html += m("Cstat (mL/cmH₂O) – referência", linha.cstat);
+        html += m("Cdyn (mL/kg/cmH₂O) – referência", linha.cdyn);
+
+        html += `<div class="aviso-legal">
+          <strong>Checklist rápido (segurança):</strong><br/>
+          1) Confirmar tamanho e disponibilidade de TOT 0,5 mm acima/abaixo.<br/>
+          2) Alarmes e monitorização contínua (SpO₂/ECG/PA), plano de reintubação, aspiração pronta.<br/>
+          3) Se via aérea difícil: acionar médico responsável, preparar materiais avançados e considerar estratégia escalonada.
+        </div></div>`;
+
+        const resultadoDiv = $("resultado");
+        resultadoDiv.innerHTML = html;
+        resultadoDiv.className = "resultado " + nivel;
+        resultadoDiv.style.display = "block";
+
+        setTimeout(() => resultadoDiv.scrollIntoView({behavior:"smooth",block:"nearest"}), 80);
+      }catch(err){
+        console.error(err);
+        alert("Erro ao processar. Verifique os campos preenchidos.");
+      }
+    }
+
+    function valueOrDash(v){ return (v === undefined || v === null || v === "") ? "—" : v; }
+
+    function limparFormulario(){
+      $("calcForm").reset();
+      toggleIdade();
+      const r = $("resultado");
+      r.style.display = "none";
+      r.innerHTML = "";
+    }
+
+    // Eventos (mais leve/limpo que inline onclick)
+    $("metodo_idade").addEventListener("change", toggleIdade);
+    $("btnGerar").addEventListener("click", analisarIOT);
+    $("btnLimpar").addEventListener("click", limparFormulario);
+
+    // Enter para calcular
+    $("calcForm").addEventListener("keydown", (e) => {
+      if(e.key === "Enter"){
+        e.preventDefault();
+        analisarIOT();
+      }
+    });
+
+    // Inicializa
+    toggleIdade();
+  </script>
+</body>
+</html>
